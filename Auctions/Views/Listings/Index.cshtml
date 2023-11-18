@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Auctions.Models.Listing>
+﻿@model List<Auctions.Models.Listing>
+ 
 
 @{
     ViewData["Title"] = "Index";
@@ -19,7 +20,7 @@
                 <h5> <a asp-action="Details" asp-route-id="@listings.Id" style="color:black;"> @listings.Title</a></h5>
                 <div>@listings.Description</div>
                 <div>Bid: $@listings.Price</div>
-                <div>Listed: @listings.User.Email</div>
+                <div>Listed By: @(listings.User != null ? listings.User.Email : "No email available")</div>
             </div>
         </div>
     </div>
