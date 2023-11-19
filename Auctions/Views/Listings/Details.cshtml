@@ -1,54 +1,133 @@
 ﻿@model Auctions.Models.Listing
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> userManager
 
 @{
     ViewData["Title"] = "Details";
+
 }
 
 <h1>Details</h1>
 
-<div>
-    <h4>Listing</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImagePath)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImagePath)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Issold)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Issold)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdentityUserId)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdentityUserId)
-        </dd>
-    </dl>
+@if (User.Identity.IsAuthenticated)
+{
+    @if (Model.Issold == true)
+    {
+        @foreach (var bid in Model.Bids)
+        {
+            @if (bid.IdentityUserId == userManager.GetUserId(User))
+            {
+                <h5> Congratulations, you are the winner!</h5>
+            }
+            else if (userManager.GetUserId(User) == Model.User.Id)
+            {
+                <h5>
+                    @bid.User.UserName is the winner
+                </h5>
+            }
+            else
+            {
+                <h5></h5>
+            }
+        }
+    }
+
+}
+
+
+<h4 style="text-align:center">@Model.Title</h4>
+
+<div class="container" style="background-color:rgba(138,129,133,0.6); margin-top:50px; margin-bottom:50px; padding:20px; border-radius:10px">
+    <div class="row">
+        <div class="col col-sm-6 col-lg-5">
+            <img src="~/Images/@Model.ImagePath" style="max-height:6vh; max-width:100%" />
+        </div>
+
+        <div class="col col-sm-6 col-lg-7">
+
+            <div>@Model.Description</div>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-action="AddBid" method="post">
+                    Bid: $ <input type="number" min="@Model.Price" name="Price" step="1" placeholder="@Model.Price.ToString()" />
+                    <input type="hidden" name="IdentityUserId" class="form-control" value="@userManager.GetUserId(User)" />
+                    <input type="hidden" name="ListingId" class="form-control" value="@Model.Id" />
+                    <input type="submit" class="btn btn-primary" />
+                </form>
+
+                <p> Bids Submitted: @Model.Bids.Count</p>
+                <br />
+                @if (userManager.GetUserId(User) == Model.User.Id)
+                {
+                    @foreach (var bid in Model.Bids)
+                    {
+                        <ul style="list-style-type:none">
+                            @bid.User.UserName bidded: $@bid.Price.ToString("N2");
+                        </ul>
+                    }
+                }
+            }
+            else
+            {
+                <div>
+                    Bid: $ < input type = "number" min = "@Model.Price" name = "Price" step = "1" placeholder = "@Model.Price.ToString()" />
+                    <input disabled type="submit" class="btn btn-primary" />
+                </div>
+            }
+            
+
+            <div>Listed By: @Model.User.UserName</div>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                @if (userManager.GetUserId(User) == Model.User.Id)
+                {
+
+
+                    @if (Model.Issold == false)
+                    {
+                        <a asp-action="CloseBiding" asp-route-id="@Model.Id"> Close Biding</a>
+                    }
+                }
+            }
+
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<br />
+
+@if (User.Identity.IsAuthenticated)
+{
+    <div class="container">
+
+        <form asp-action="AddComment" method="post">
+            <h6> Add Comment</h6>
+            <textarea class="form-control" name="Content" aria-label="with textarea" style="width:40%; vertical-align:top"></textarea>
+            <input type="hidden" name="IdentityUserId" class="form-control" value="@userManager.GetUserId(User)" />
+            <input type="hidden" name="ListingId" class="form-control" value="@Model.Id" />
+            <input type="submit" class="btn btn-primary m-1" />
+        </form>
+
+    </div>
+}
+else
+{
+    <div class="container">
+
+    </div>
+}
+
+<br />
+
+<div class="container">
+    <h6> Comments</h6>
+
+    @foreach(var comment in Model.Comments)
+            {
+                <div style="border:1px solid lightgray; margin:10px; padding:10px; border-radius:10px;width:40%">
+                   <p> @comment.Content - @comment.User.UserName </p>
+                </div>
+            }
 </div>
