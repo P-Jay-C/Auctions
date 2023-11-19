@@ -27,11 +27,18 @@ namespace Auctions.Controllers
         }
 
         // GET: Listings
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageNumber, string searchString )
         {
-              return _listingsService.GetAll() != null ? 
-                          View(await _listingsService.GetAll().ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Listings'  is null.");
+            var applicationDbContext = _listingsService.GetAll(); 
+                     
+            int pageSize = 3;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                applicationDbContext = applicationDbContext.Where(x => x.Title.Contains(searchString));
+            }
+
+            return View(await PaginatedList<Listing>.CreateAsync(applicationDbContext.Where(l=> l.Issold==false).AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         // GET: Listings/Details/5
