@@ -1,5 +1,5 @@
-﻿@model List<Auctions.Models.Listing>
- 
+﻿@model PaginatedList<Auctions.Models.Listing>
+
 
 @{
     ViewData["Title"] = "Index";
@@ -7,13 +7,13 @@
 
 <h1>Active Listings</h1>
 
-@foreach(var listings in Model)
- {
+@foreach (var listings in Model)
+{
     <div class="container" style="background-color:rgba(138,129,133,0.6); margin-top:50px; margin-bottom:50px;padding:20px; border-radius:10px">
 
         <div class="row">
             <div class="col col-sm-6 col-lg-5">
-                <img src="~/Images/@listings.ImagePath" style="max-height:400px; max-width:400px"/>
+                <img src="~/Images/@listings.ImagePath" style="max-height:400px; max-width:400px" />
             </div>
 
             <div class="col col-sm-6 col-lg-6">
@@ -27,6 +27,27 @@
 }
 
 @if (!Model.Any())
-            {
-                <p> No Active Listings</p>
-            }
+{
+    <p> No Active Listings</p>
+}
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+
+<div class="d-flex justify-content-center">
+    <a asp-action="Index"
+       asp-route-pageNumber="@(Model.PageIndex - 1)"
+       class="btn btn-default @prevDisabled">
+        Previous
+    </a>
+    <div class="btn" style="cursor: default">
+        Page @Model.PageIndex of @Model.TotalPages
+    </div>
+    <a asp-action="Index"
+       asp-route-pageNumber="@(Model.PageIndex + 1)"
+       class="btn btn-default @nextDisabled">
+        Next
+    </a>
+</div>
